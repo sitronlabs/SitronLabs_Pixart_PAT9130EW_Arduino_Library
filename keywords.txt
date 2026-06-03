@@ -1,0 +1,8 @@
+pat9130ew	KEYWORD1
+setup	KEYWORD2
+register_read	KEYWORD2
+register_write	KEYWORD2
+detect	KEYWORD2
+init	KEYWORD2
+motion_available	KEYWORD2
+delta_read	KEYWORD2
