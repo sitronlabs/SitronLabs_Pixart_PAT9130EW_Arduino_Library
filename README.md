@@ -12,7 +12,7 @@ Arduino library for interfacing with the PixArt PAT9130EW laser-based optical mo
 
 ## Description
 
-The PAT9130EW is a miniature optical tracking sensor that reports X/Y displacement in counts over a 3-wire SPI interface. This library provides a simple interface to detect the sensor, apply the default initialization sequence from the PixArt reference firmware, and read motion deltas.
+The PAT9130EW is a miniature optical tracking sensor that reports X/Y displacement in counts over a 3-wire SPI interface. This library provides an interface to detect the sensor, apply the default initialization sequence from the PixArt reference firmware, read motion deltas, and access surface quality registers (IQ, shutter, frame average).
 
 ## Installation
 
@@ -96,14 +96,14 @@ void setup() {
 void loop() {
     int16_t delta_x = 0;
     int16_t delta_y = 0;
+    bool x_overflow = false;
+    bool y_overflow = false;
 
-    if (sensor.motion_available()) {
-        if (sensor.delta_read(delta_x, delta_y) == 0) {
-            Serial.print("deltaX: ");
-            Serial.print(delta_x);
-            Serial.print("\tdeltaY: ");
-            Serial.println(delta_y);
-        }
+    if (sensor.motion_delta_read(delta_x, delta_y, x_overflow, y_overflow) == 1) {
+        Serial.print("deltaX: ");
+        Serial.print(delta_x);
+        Serial.print("\tdeltaY: ");
+        Serial.println(delta_y);
     }
 }
 ```
@@ -144,15 +144,65 @@ Writes an 8-bit register.
 
 Returns 0 on success, or a negative error code on failure.
 
-### motion_available(void)
+### motion_delta_available(void)
 
-Returns true when the motion status bit is set in register 0x02.
+Polls register 0x02 without reading delta registers.
 
-### delta_read(int16_t &delta_x, int16_t &delta_y)
+Returns `1` if the motion bit is set, `0` if not, or a negative error code on failure.
 
-Reads the latest X/Y displacement in counts.
+### motion_delta_read(int16_t &delta_x, int16_t &delta_y, bool &x_overflow, bool &y_overflow)
 
-Returns 0 on success, or -EIO on SPI failure.
+Reads `Motion_Status` first, then delta registers when motion data is available.
+
+Returns `1` if motion data was read, `0` if no motion data is available, or a negative error code on failure. Overflow flags reflect the `DXOVF` and `DYOVF` bits from `Motion_Status`.
+
+### iq_read(uint8_t &iq)
+
+Reads image quality from register 0x13 (0 to 255). Higher values indicate more trackable surface features.
+
+Returns 0 on success, or a negative error code on failure.
+
+### shutter_read(uint8_t &shutter)
+
+Reads the auto-exposure shutter index from register 0x15 (0 to 255).
+
+Returns 0 on success, or a negative error code on failure.
+
+### frame_avg_read(uint8_t &frame_avg)
+
+Reads average frame brightness from register 0x17 (0 to 255).
+
+Returns 0 on success, or a negative error code on failure.
+
+### burst_read(int16_t &delta_x, int16_t &delta_y, uint8_t &motion_status, bool &x_overflow, bool &y_overflow, uint8_t &iq, uint8_t &shutter, uint8_t &frame_avg)
+
+Reads motion status, deltas, IQ, shutter, and frame average in one SPI burst transaction (datasheet section 7.4.4).
+
+Returns 0 on success, or a negative error code on failure. Check `motion_status` bit 7 for motion availability.
+
+### resolution_cpi_get(float &cpi_x, float &cpi_y)
+
+Reads the configured CPI resolution for both axes (`55.2 × RES_X/Y` per datasheet).
+
+Returns 0 on success, or a negative error code on failure.
+
+### power_down(bool enable)
+
+Enters or exits software power-down mode via the `PD_EnH` bit in the Configuration register.
+
+Returns 0 on success, or a negative error code on failure.
+
+### write_protect_disable(void) / write_protect_enable(void)
+
+Disables or enables register write protection (register 0x09). Required before writing to registers at address 0x10 and above.
+
+Returns 0 on success, or a negative error code on failure.
+
+### mfio_config_set(pat9130ew_mfio_function function)
+
+Configures the MFIO pin function. Use the `pat9130ew_mfio_function` enum (`PAT9130EW_MFIO_HARDWARE_RESET`, `PAT9130EW_MFIO_QUICK_BURST`, `PAT9130EW_MFIO_HARDWARE_POWER_DOWN`, `PAT9130EW_MFIO_NULL`).
+
+Returns 0 on success, or a negative error code on failure.
 
 ## Credits
 
