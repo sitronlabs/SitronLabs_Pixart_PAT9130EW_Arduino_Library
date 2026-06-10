@@ -488,14 +488,14 @@ int pat9130ew::mfio_config_set(const enum pat9130ew_mfio_function function) {
     int res;
     uint8_t mfio_config = 0x00;
 
-    res = write_protect_disable();
+    res = write_protect_disable(true);
     if (res < 0) {
         return res;
     }
 
     res = register_read(PAT9130EW_REGISTER_MFIO_CONFIG, mfio_config);
     if (res < 0) {
-        write_protect_enable();
+        write_protect_disable(false);
         return res;
     }
 
@@ -503,9 +503,9 @@ int pat9130ew::mfio_config_set(const enum pat9130ew_mfio_function function) {
 
     res = register_write(PAT9130EW_REGISTER_MFIO_CONFIG, mfio_config);
     if (res < 0) {
-        write_protect_enable();
+        write_protect_disable(false);
         return res;
     }
 
-    return write_protect_enable();
+    return write_protect_disable(false);
 }

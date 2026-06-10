@@ -4,5 +4,13 @@ register_read	KEYWORD2
 register_write	KEYWORD2
 detect	KEYWORD2
 init	KEYWORD2
-motion_available	KEYWORD2
-delta_read	KEYWORD2
+motion_delta_available	KEYWORD2
+motion_delta_read	KEYWORD2
+iq_read	KEYWORD2
+shutter_read	KEYWORD2
+frame_avg_read	KEYWORD2
+burst_read	KEYWORD2
+resolution_cpi_get	KEYWORD2
+power_down	KEYWORD2
+write_protect_disable	KEYWORD2
+mfio_config_set	KEYWORD2

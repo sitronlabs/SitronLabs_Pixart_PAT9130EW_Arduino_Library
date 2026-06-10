@@ -1,6 +1,6 @@
 {
     "name": "Sitron_Labs_PAT9130EW_Arduino_Library",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "description": "Arduino library for the PixArt PAT9130EW optical motion tracking sensor.",
     "keywords": "sitron labs,sitron,labs,arduino,library,pixart,pat9130ew,pat9130,optical,tracking,motion,sensor,spi,ots",
     "repository": {
